@@ -1,5 +1,6 @@
-# Composer vendor
+# Composer
 /vendor
+composer.lock
 
 # IDE
 .settings
