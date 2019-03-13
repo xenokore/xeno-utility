@@ -23,10 +23,10 @@ class DirectoryHelper
                 FileHelper::delete($file);
             }
         }
-        
+
         return rmdir($path);
     }
-    
+
     public static function clear(string $path): bool
     {
         if (self::delete($path)) {
@@ -36,15 +36,24 @@ class DirectoryHelper
         return false;
     }
 
-    public static function createIfNotExist(string $path): bool
+    public static function create(string $path, int $mode = 0777, bool $recursive = true): bool
+    {
+        if (is_dir($path)) {
+            return false;
+        }
+
+        @mkdir($path, $mode, $recursive);
+
+        return is_dir($path);
+    }
+
+    public static function createIfNotExist(string $path, int $mode = 0777, bool $recursive = true): bool
     {
         if (is_dir($path)) {
             return true;
         }
 
-        @mkdir($path, 0777, true);
-
-        return is_dir($path);
+        return self::create($path, $mode, $recursive);
     }
 
     public static function isAccessible(string $path, bool $create = false): bool
@@ -52,7 +61,7 @@ class DirectoryHelper
         if ($create && !self::createIfNotExist($path)) {
             return false;
         }
-        
+
         return is_dir($path) && is_readable($path);
     }
 

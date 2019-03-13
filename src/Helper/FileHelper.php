@@ -60,7 +60,7 @@ class FileHelper
         if ($create && !self::createIfNotExist($path)) {
             return false;
         }
-        
+
         return file_exists($path) && is_file($path) && is_readable($path);
     }
 
@@ -108,7 +108,7 @@ class FileHelper
             throw new \Exception("{$file_path} is not readable");
             //throw new FileNotFoundException("{$file_path} is not readable");
         }
- 
+
         $file_size               = @filesize($file_path);
         $file_last_modified_time = @filemtime($file_path);
         $file_name               = rawurldecode($file_name);
@@ -131,15 +131,15 @@ class FileHelper
         if (ini_get('zlib.output_compression')) {
             @ini_set('zlib.output_compression', 'Off');
         }
- 
+
         // Set mimetype
         header("Content-Type: {$mime_type}");
-        
+
         // Force download
         if ($mime_type == 'application/force-download') {
             header("Content-Disposition: attachment; filename=\"{$file_name}\"");
             header("Content-Transfer-Encoding: binary");
-            
+
             // Disable caching
             header("Cache-control: private");
             header('Pragma: private');
@@ -164,7 +164,7 @@ class FileHelper
             header("Pragma: cache");
             header("Cache-Control: max-age=$time_to_cache");
         }
-        
+
         // Allow download resuming
         header('Accept-Ranges: bytes');
 
@@ -182,7 +182,7 @@ class FileHelper
             } else {
                 $range_end = intval($range_end);
             }
- 
+
             $output_size = $range_end - $range + 1;
             header("HTTP/1.1 206 Partial Content");
             header("Content-Length: {$output_size}");
@@ -191,14 +191,14 @@ class FileHelper
             $output_size = $file_size;
             header("Content-Length: {$file_size}");
         }
- 
+
         // Open file handle
         if ($file_handle = fopen($file_path, 'r')) {
             // Set pointer if partial download
             if (isset($_SERVER['HTTP_RANGE'])) {
                 fseek($file_handle, $range);
             }
- 
+
             // Loop through file and output to browser
             $bytes_sent = 0;
             while (!feof($file_handle) && (!connection_aborted()) && ($bytes_sent < $output_size)) {
