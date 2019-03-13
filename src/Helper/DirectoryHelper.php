@@ -94,7 +94,7 @@ class DirectoryHelper
         return $timestamp;
     }
 
-    public static function tree(string $path, array $exclude_files = []): array
+    public static function tree(string $path, array $exclude_files = ['.', '..']): array
     {
         $files = [];
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file_info) {
