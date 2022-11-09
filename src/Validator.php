@@ -23,8 +23,8 @@ class Validator
     {
         try {
             // See if we can create an object using the datetime format
-            return (bool) \DateTime::createFromFormat($format, $datetime);
-        } catch (Exception $ex) {
+            return (bool) \DateTime::createFromFormat($format, $date_string);
+        } catch (\Exception $ex) {
         }
 
         return false;

@@ -33,12 +33,49 @@ class ClassHelper
             'namespace' => null,
         ];
 
-        if (FileHelper::isAccessible($file_path)) {
+        if (!FileHelper::isAccessible($file_path)) {
+            return $return;
+        }
+
+        // PHP 8 and above
+        // @link https://stackoverflow.com/a/67099502
+        if (\version_compare(PHP_VERSION, '8.0.0') >= 0) {
+
+            $tokens    = \PhpToken::tokenize(\file_get_contents($file_path));
+
+            for ($i = 0; $i < count($tokens); $i++) {
+                if ($tokens[$i]->getTokenName() === 'T_NAMESPACE') {
+                    for ($j = $i + 1; $j < count($tokens); $j++) {
+                        if ($tokens[$j]->getTokenName() === 'T_NAME_QUALIFIED') {
+                            $return['namespace'] = $tokens[$j]->text;
+                            break;
+                        }
+                    }
+                }
+
+                if ($tokens[$i]->getTokenName() === 'T_CLASS') {
+                    for ($j = $i + 1; $j < count($tokens); $j++) {
+                        if ($tokens[$j]->getTokenName() === 'T_WHITESPACE') {
+                            continue;
+                        }
+
+                        if ($tokens[$j]->getTokenName() === 'T_STRING') {
+                            $return['class'] = $tokens[$j]->text;
+                            break 2;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+
+        } else { // Below PHP 8
+
             $fp     = fopen($file_path, 'r');
             $buffer = '';
             $i      = 0;
             while (!$return['class']) {
-                if (feof($fp)) {
+                if (!$fp || feof($fp)) {
                     break;
                 }
 
@@ -118,7 +155,7 @@ class ClassHelper
             $source = file($filename);
             $source = implode('', array_slice($source, 0, count($source)));
             $source = preg_split("/(\n|\r\n|\r)/", $source);
-            
+
             for ($i = $start_line; $i < $end_line; $i++) {
                 $body .= $source[$i] . PHP_EOL;
             }
@@ -139,7 +176,6 @@ class ClassHelper
 
     /**
      * Call a private method of a class. Useful for testing internal workings.
-     *
      * @param object $object
      * @param string $method
      * @param array ...$arguments
@@ -161,7 +197,7 @@ class ClassHelper
 
             // Set method to public
             $method->setAccessible(true);
-    
+
             // Call the new method in the original class
             return $method->invokeArgs($object, $arguments);
         } catch (\Exception $ex) {

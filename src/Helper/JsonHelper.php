@@ -8,6 +8,7 @@ class JsonHelper
 {
     private static function _encodeDecode(string $action, $data)
     {
+        // Execute either json_encode or json_decode function
         $return = ('json_' . $action)($data);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
@@ -30,7 +31,7 @@ class JsonHelper
     public static function isValidJson(string $data)
     {
         if (in_array(StringHelper::subtract($data, 0, 1), ['{', '['])) {
-            json_decode($string);
+            @json_decode($data);
             return (json_last_error() === JSON_ERROR_NONE);
         }
 

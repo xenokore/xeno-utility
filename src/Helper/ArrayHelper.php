@@ -5,21 +5,21 @@
 namespace Xenokore\Utility\Helper;
 
 use Xenokore\Utility\Exception\JsonException;
+use Xenokore\Utility\Exception\InvalidArrayException;
 use Xenokore\Utility\Exception\ArrayKeyNotFoundException;
 
 class ArrayHelper
 {
     /**
      * Set an array item to a given value using "dot" notation.
-     *
-     * If no key is given to the method, the entire array will be replaced.
-     *
-     * @param  array   $array
-     * @param  string  $key
-     * @param  mixed   $value
+     * If the given key is null, the entire array will be replaced.
+     * Returns the new array.
+     * @param array  $array
+     * @param string $key
+     * @param mixed  $value
      * @return array
      */
-    public static function set(&$array, $key, $value)
+    public static function set(array &$array, string $key, mixed $value)
     {
         if (is_null($key)) {
             return $array = $value;
@@ -47,17 +47,18 @@ class ArrayHelper
 
     /**
      * Get an item from an array using "dot" notation.
-     *
-     * @param  \ArrayAccess|array  $array
-     * @param  string  $key
-     * @param  mixed   $default
-     * @param  bool    $throw   Throw an error instead of returning the default value
+     * If the $throw argument is set to true an exception is
+     * thrown instead of returning the default value.
+     * @param \ArrayAccess|array $array
+     * @param string             $key
+     * @param mixed              $default
+     * @param bool               $throw   Throw an error instead of returning the default value
      * @return mixed
      */
-    public static function get(array $a, string $path, $default = null, bool $throw = false)
+    public static function get(array $array, string $key, $default = null, bool $throw = false)
     {
-        $current = $a;
-        $p       = strtok($path, '.');
+        $current = $array;
+        $p       = strtok($key, '.');
 
         while ($p !== false) {
             if (!isset($current[$p])) {
@@ -75,26 +76,25 @@ class ArrayHelper
     }
 
     /**
-     * Determine whether the given value is array accessible.
-     *
-     * @param  mixed  $value
+     * Determine whether a given value is array accessible.
+     * Checks if the value is an instance of `\ArrayAccess`.
+     * @param mixed $value
      * @return bool
      */
-    public static function accessible($value)
+    public static function isAccessible(mixed $value)
     {
-        return is_array($value) || $value instanceof ArrayAccess;
+        return is_array($value) || $value instanceof \ArrayAccess;
     }
 
     /**
-     * Determine if the given key exists in the provided array.
-     *
-     * @param  \ArrayAccess|array  $array
-     * @param  string|int  $key
+     * Determine if a given key exists in the provided array.
+     * @param \ArrayAccess|array $array
+     * @param string|int         $key
      * @return bool
      */
-    public static function exists($array, $key)
+    public static function exists(array $array, mixed $key)
     {
-        if ($array instanceof ArrayAccess) {
+        if ($array instanceof \ArrayAccess) {
             return $array->offsetExists($key);
         }
 
@@ -103,7 +103,6 @@ class ArrayHelper
 
     /**
      * Creates a multidimensional array based on an array of dotnotation keys
-     *
      * @param array $array
      * @return array
      */
@@ -121,14 +120,13 @@ class ArrayHelper
 
     /**
      * Convert multidimensional array to 2D array with dotnotation keys
-     * https://stackoverflow.com/a/10424516/5865844
-     *
-     * @param array $array
+     * @param array  $array
+     * @param string $delimiter
      * @return array
+     * @link https://stackoverflow.com/a/10424516/5865844
      */
     public static function convertArrayToDotNotation(array $array, string $delimiter = '.'): array
     {
-        //
         $it     = new \RecursiveIteratorIterator(new \RecursiveArrayIterator($array));
         $result = [];
         foreach ($it as $leafValue) {
@@ -141,7 +139,13 @@ class ArrayHelper
         return $result;
     }
 
-    public static function moveToTop(array &$array, $key): void
+    /**
+     * Move an array item to the start of the array.
+     * @param array  $array
+     * @param string $key
+     * @return void
+     */
+    public static function moveToTop(array &$array, string $key): void
     {
         if (isset($array[$key])) {
             $temp = [$key => $array[$key]];
@@ -150,7 +154,13 @@ class ArrayHelper
         }
     }
 
-    public static function moveToBottom(array &$array, $key): void
+    /**
+     * Move an array item to the end of the array.
+     * @param array  $array
+     * @param string $key
+     * @return void
+     */
+    public static function moveToBottom(array &$array, string $key): void
     {
         if (isset($array[$key])) {
             $value = $array[$key];
@@ -160,8 +170,7 @@ class ArrayHelper
     }
 
     /**
-     * Merges arrays recursively and replaces distinct non-array values
-     *
+     * Merge 2 arrays recursively and replaces distinct non-array values
      * @param array $array1
      * @param array $array2
      * @return array
@@ -179,10 +188,16 @@ class ArrayHelper
                 $merged[$key] = $value;
             }
         }
-      
+
         return $merged;
     }
 
+    /**
+     * Get a checksum of the given array.
+     * @param array   $array
+     * @param boolean $sort
+     * @return string|null
+     */
     public static function getChecksum(array $array, bool $sort = false): ?string
     {
         if (empty($array)) {
@@ -198,7 +213,27 @@ class ArrayHelper
         } catch (JsonException $e) {
             return null;
         }
-        
-        return StringHelper::subtract(md5($json), 0, 16);
+
+        return StringHelper::subtract(sha1($json), 0, 16);
+    }
+
+    /**
+     * Gets a value from an array based on the current day.
+     * Each day the value shifts to the next one.
+     * @param  array $arr
+     * @return void
+     */
+    public static function getValueBasedOnCurrentDay(array $array): mixed
+    {
+        $dateInt = (int)date('Ymd');
+        $arrayCount = count($array);
+
+        if($arrayCount > $dateInt) {
+            throw new InvalidArrayException(
+                "Input array can not contain more than {$dateInt} entries"
+            );
+        }
+
+        return $array[$dateInt % $arrayCount];
     }
 }
