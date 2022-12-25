@@ -1,6 +1,6 @@
 {
     "name": "xenokore/utility",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "type": "library",
     "description": "General utility helpers",
     "keywords": [

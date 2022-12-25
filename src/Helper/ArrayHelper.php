@@ -61,9 +61,9 @@ class ArrayHelper
         $p       = strtok($key, '.');
 
         while ($p !== false) {
-            if (!array_key_exists($p, $current)) {
+            if(!\is_array($current) || !\array_key_exists($p, $current)) {
                 if ($throw) {
-                    throw new ArrayKeyNotFoundException("Array key '{$p}' not found");
+                    throw new ArrayKeyNotFoundException("Array key '{$p}' not found ('{$key}')");
                 } else {
                     return $default;
                 }
