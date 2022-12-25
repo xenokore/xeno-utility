@@ -2,6 +2,6 @@
 
 namespace Xenokore\Utility\Exception;
 
-class ArrayKeyNotFoundException extends ArrayHelperException
+class ArrayKeyNotFoundException extends \Exception
 {
 }

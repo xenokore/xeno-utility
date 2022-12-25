@@ -204,4 +204,49 @@ class ClassHelper
             return null;
         }
     }
+
+    public static function getClassesAndFilepathsInDir(string $path, string $root_namespace = 'App', bool $relative_filepath = false, array $ignore_classes_ending_with = [])
+    {
+        $return = [];
+
+        // Create CLASS => FILE array
+        foreach(DirectoryHelper::tree($path, true) as $class_path){
+            $class_full_name = $root_namespace . explode('.', $class_path)[0];
+
+            // Ignore classes ending with a specific string
+            if(!empty($ignore_classes_ending_with)){
+                if(StringHelper::endsWith($class_full_name, $ignore_classes_ending_with)){
+                    continue;
+                }
+            }
+
+            if($relative_filepath){
+                $return[$class_full_name] = $class_path;
+            } else {
+                $return[$class_full_name] = $path . $class_path;
+            }
+        }
+
+        return $return;
+    }
+
+    public static function getClassesInDir(string $path, string $root_namespace = 'App', array $ignore_classes_ending_with = [])
+    {
+        $return = [];
+
+        foreach(DirectoryHelper::tree($path, true) as $class_path){
+            $class_full_name = $root_namespace . explode('.', $class_path)[0];
+
+            // Ignore classes ending with a specific string
+            if(!empty($ignore_classes_ending_with)){
+                if(StringHelper::endsWith($class_full_name, $ignore_classes_ending_with)){
+                    continue;
+                }
+            }
+
+            $return[] = $class_full_name;
+        }
+
+        return $return;
+    }
 }

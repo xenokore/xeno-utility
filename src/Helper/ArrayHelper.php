@@ -19,7 +19,7 @@ class ArrayHelper
      * @param mixed  $value
      * @return array
      */
-    public static function set(array &$array, string $key, mixed $value)
+    public static function set(array &$array, string $key, $value)
     {
         if (is_null($key)) {
             return $array = $value;

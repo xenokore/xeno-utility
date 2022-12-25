@@ -94,13 +94,19 @@ class DirectoryHelper
         return $timestamp;
     }
 
-    public static function tree(string $path, array $exclude_files = ['.', '..']): array
+    public static function tree(string $path, bool $relative_path = false, array $exclude_files = ['.', '..']): array
     {
         $files = [];
+        $path_strlen = strlen($path);
+
         foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path)) as $file_info) {
             if ($file_info->isFile() || $file_info->isDir()) {
                 if (!$exclude_files || !in_array(basename($file_info), $exclude_files)) {
-                    $files[] = $file_info->getRealPath();
+                    $path = $file_info->getRealPath();
+                    if($relative_path){
+                        $path = \substr($path, $path_strlen);
+                    }
+                    $files[] = $path;
                 }
             }
         }
